@@ -53,3 +53,17 @@ Future<Weather> fetchWeather({
   }
   return Weather.fromJson(jsonDecode(res.body));
 }
+
+/// WMO 날씨 코드를 한국어 하늘 상태로 바꾼다 (PRD #4-3, #10-3)
+String describeSky(int code) {
+  if (code == 0) return '맑음';
+  if (code <= 2) return '구름 조금';
+  if (code == 3) return '흐림';
+  if (code <= 48) return '안개';
+  if (code <= 57) return '이슬비';
+  if (code <= 67) return '비';
+  if (code <= 77) return '눈';
+  if (code <= 82) return '소나기';
+  if (code <= 86) return '눈보라';
+  return '천둥 번개';
+}
