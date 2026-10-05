@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'weather.dart';
+
 void main() {
   runApp(const WeatherApp());
 }
@@ -31,15 +33,37 @@ class WeatherApp extends StatelessWidget {
   }
 }
 
+/// 서울 시청 좌표
+const seoulLat = 37.5665, seoulLon = 126.978;
+
+Future<String> seoulWeatherAnswer() async => weatherSentence(
+  await fetchWeather(latitude: seoulLat, longitude: seoulLon),
+  place: '서울',
+);
+
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.answer = seoulWeatherAnswer});
+
+  /// 날씨 답 문장을 만든다. 테스트에서는 가짜로 바꿔 끼운다.
+  final Future<String> Function() answer;
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final String _message = '아래 노란 버튼을 누르고\n"오늘 날씨가 뭐야?"라고 말해 보세요.';
+  String _message = '아래 노란 버튼을 누르고\n"오늘 날씨가 뭐야?"라고 말해 보세요.';
+
+  Future<void> _onAsk() async {
+    setState(() => _message = '날씨를 확인하고 있어요.');
+    String text;
+    try {
+      text = await widget.answer();
+    } catch (_) {
+      text = '날씨를 가져오지 못했어요. 다시 눌러 주세요.';
+    }
+    if (mounted) setState(() => _message = text);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +100,7 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 flex: 3,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _onAsk,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,
                     foregroundColor: background,
