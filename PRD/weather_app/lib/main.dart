@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'voice.dart';
 import 'weather.dart';
 
 void main() {
@@ -42,10 +43,17 @@ Future<String> seoulWeatherAnswer() async => weatherSentence(
 );
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, this.answer = seoulWeatherAnswer});
+  const HomePage({
+    super.key,
+    this.answer = seoulWeatherAnswer,
+    this.speak = speakText,
+  });
 
   /// 날씨 답 문장을 만든다. 테스트에서는 가짜로 바꿔 끼운다.
   final Future<String> Function() answer;
+
+  /// 문장을 소리로 읽는다.
+  final Future<void> Function(String) speak;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -62,7 +70,17 @@ class _HomePageState extends State<HomePage> {
     } catch (_) {
       text = '날씨를 가져오지 못했어요. 다시 눌러 주세요.';
     }
-    if (mounted) setState(() => _message = text);
+    if (mounted) await _say(text);
+  }
+
+  /// 화면 글자를 바꾸고 같은 문장을 소리로 읽는다 (PRD #9-3)
+  Future<void> _say(String text) async {
+    setState(() => _message = text);
+    try {
+      await widget.speak(text);
+    } catch (_) {
+      // 소리가 안 나와도 화면 글자는 남아 있으므로 앱은 계속 쓸 수 있다
+    }
   }
 
   @override
