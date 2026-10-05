@@ -73,3 +73,8 @@ Future<String?> listenOnce() async {
     },
   );
 }
+
+/// "오늘 날씨가 뭐야?", "날씨 알려줘"처럼 '날씨'가 들어가면 날씨 질문이다 (PRD #4-2)
+/// 음성 인식이 '날 씨'처럼 띄어 쓰는 경우도 있어 공백을 지우고 본다.
+bool isWeatherQuestion(String heard) =>
+    heard.replaceAll(' ', '').contains('날씨');
