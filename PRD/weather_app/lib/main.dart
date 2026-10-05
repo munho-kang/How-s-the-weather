@@ -54,14 +54,18 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 flex: 2,
                 child: Center(
-                  child: SingleChildScrollView(
-                    child: Text(
-                      _message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 30,
-                        height: 1.4,
-                        color: textColor,
+                  // VoiceOver가 안내·결과 문장을 한 덩어리로 읽도록 묶는다 (PRD #3-1, #7-4)
+                  child: Semantics(
+                    container: true,
+                    child: SingleChildScrollView(
+                      child: Text(
+                        _message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 30,
+                          height: 1.4,
+                          color: textColor,
+                        ),
                       ),
                     ),
                   ),
@@ -80,19 +84,23 @@ class _HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.circular(32),
                     ),
                   ),
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.mic, size: 96),
-                      SizedBox(height: 16),
-                      Text(
-                        '날씨 물어보기',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
+                  // 힌트는 버튼 안쪽에 두어야 버튼 이름과 함께 읽힌다
+                  child: Semantics(
+                    hint: '두 번 탭하면 질문을 듣기 시작합니다',
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ExcludeSemantics(child: Icon(Icons.mic, size: 96)),
+                        SizedBox(height: 16),
+                        Text(
+                          '날씨 물어보기',
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
