@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'location.dart';
+
 /// 오늘 날씨 (PRD #4-3)
 class Weather {
   const Weather({
@@ -86,3 +88,21 @@ String weatherSentence(Weather w, {required String place}) =>
     '지금 기온은 ${degrees(w.temperature)}, '
     '최고 ${degrees(w.max)}, 최저 ${degrees(w.min)}입니다. '
     '비 올 확률은 ${w.rainChance}퍼센트, ${umbrellaAdvice(w)}';
+
+/// 서울 시청 좌표
+const seoulLat = 37.5665, seoulLon = 126.978;
+
+Future<Weather> _fetch(double lat, double lon) =>
+    fetchWeather(latitude: lat, longitude: lon);
+
+/// 현재 위치의 날씨 답 문장 (PRD #4-4)
+Future<String> weatherAnswer({
+  Future<Coords?> Function() locate = currentPosition,
+  Future<Weather> Function(double lat, double lon) fetch = _fetch,
+}) async {
+  final here = await locate();
+  if (here == null) {
+    return weatherSentence(await fetch(seoulLat, seoulLon), place: '서울');
+  }
+  return weatherSentence(await fetch(here.lat, here.lon), place: '현재 위치');
+}

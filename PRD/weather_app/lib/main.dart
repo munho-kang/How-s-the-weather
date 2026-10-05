@@ -34,20 +34,12 @@ class WeatherApp extends StatelessWidget {
   }
 }
 
-/// 서울 시청 좌표
-const seoulLat = 37.5665, seoulLon = 126.978;
-
-Future<String> seoulWeatherAnswer() async => weatherSentence(
-  await fetchWeather(latitude: seoulLat, longitude: seoulLon),
-  place: '서울',
-);
-
 const askAgain = '잘 알아듣지 못했어요. 다시 버튼을 누르고 "오늘 날씨가 뭐야?"라고 말해 주세요.';
 
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
-    this.answer = seoulWeatherAnswer,
+    this.answer = weatherAnswer,
     this.speak = speakText,
     this.listen = listenOnce,
   });
