@@ -47,6 +47,7 @@ class HomePage extends StatefulWidget {
     super.key,
     this.answer = seoulWeatherAnswer,
     this.speak = speakText,
+    this.listen = listenOnce,
   });
 
   /// 날씨 답 문장을 만든다. 테스트에서는 가짜로 바꿔 끼운다.
@@ -54,6 +55,9 @@ class HomePage extends StatefulWidget {
 
   /// 문장을 소리로 읽는다.
   final Future<void> Function(String) speak;
+
+  /// 한 번 듣고 알아들은 문장을 돌려준다.
+  final Future<String?> Function() listen;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -63,22 +67,40 @@ class _HomePageState extends State<HomePage> {
   String? _lastSpoken;
   String _message = '아래 노란 버튼을 누르고\n"오늘 날씨가 뭐야?"라고 말해 보세요.';
 
+  bool _busy = false;
+
   Future<void> _onAsk() async {
-    setState(() => _message = '날씨를 확인하고 있어요.');
-    String text;
+    if (_busy) return; // 듣거나 읽는 중에 또 누르면 무시
+    _busy = true;
     try {
-      text = await widget.answer();
-    } catch (_) {
-      text = '날씨를 가져오지 못했어요. 다시 눌러 주세요.';
+      // 버튼을 누른 뒤에만 듣기 시작한다 (PRD #4-1, #9-2)
+      await _say('말씀하세요.', remember: false);
+      if (!mounted) return;
+      setState(() => _message = '듣고 있어요...');
+      await widget.listen();
+      if (!mounted) return;
+
+      setState(() => _message = '날씨를 확인하고 있어요.');
+      String text;
+      try {
+        text = await widget.answer();
+      } catch (_) {
+        text = '날씨를 가져오지 못했어요. 다시 눌러 주세요.';
+      }
+      if (mounted) await _say(text);
+    } finally {
+      _busy = false;
     }
-    if (mounted) await _say(text);
   }
 
   void _replay() => _say(_lastSpoken!);
 
   /// 화면 글자를 바꾸고 같은 문장을 소리로 읽는다 (PRD #9-3)
-  Future<void> _say(String text) async {
-    setState(() => _message = _lastSpoken = text);
+  Future<void> _say(String text, {bool remember = true}) async {
+    setState(() {
+      _message = text;
+      if (remember) _lastSpoken = text;
+    });
     try {
       await widget.speak(text);
     } catch (_) {

@@ -46,7 +46,13 @@ void main() {
 
   testWidgets('버튼을 누르면 날씨 문장이 화면에 나온다', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(home: HomePage(answer: () async => '오늘 서울 날씨는 맑음입니다.')),
+      MaterialApp(
+        home: HomePage(
+          answer: () async => '오늘 서울 날씨는 맑음입니다.',
+          speak: (_) async {},
+          listen: () async => '오늘 날씨가 뭐야',
+        ),
+      ),
     );
     await tester.tap(find.text('날씨 물어보기'));
     await tester.pumpAndSettle();
@@ -55,7 +61,13 @@ void main() {
 
   testWidgets('날씨를 못 가져오면 다시 누르라고 안내한다', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(home: HomePage(answer: () async => throw Exception('x'))),
+      MaterialApp(
+        home: HomePage(
+          answer: () async => throw Exception('x'),
+          speak: (_) async {},
+          listen: () async => '오늘 날씨가 뭐야',
+        ),
+      ),
     );
     await tester.tap(find.text('날씨 물어보기'));
     await tester.pumpAndSettle();

@@ -7,7 +7,11 @@ import 'package:weather_app/main.dart';
 const sunny = '오늘 서울 날씨는 맑음입니다.';
 
 Widget app(List<String> spoken) => MaterialApp(
-  home: HomePage(answer: () async => sunny, speak: (t) async => spoken.add(t)),
+  home: HomePage(
+    answer: () async => sunny,
+    speak: (t) async => spoken.add(t),
+    listen: () async => '오늘 날씨가 뭐야',
+  ),
 );
 
 void main() {
