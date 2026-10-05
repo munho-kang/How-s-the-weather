@@ -89,6 +89,8 @@ String weatherSentence(Weather w, {required String place}) =>
     '최고 ${degrees(w.max)}, 최저 ${degrees(w.min)}입니다. '
     '비 올 확률은 ${w.rainChance}퍼센트, ${umbrellaAdvice(w)}';
 
+const noLocation = '위치를 알 수 없어 서울 날씨를 알려드려요.';
+
 /// 서울 시청 좌표
 const seoulLat = 37.5665, seoulLon = 126.978;
 
@@ -102,7 +104,9 @@ Future<String> weatherAnswer({
 }) async {
   final here = await locate();
   if (here == null) {
-    return weatherSentence(await fetch(seoulLat, seoulLon), place: '서울');
+    // 위치를 모르면 이유를 말하고 서울 날씨로 대신한다 (PRD #9-1, #10-4)
+    final w = await fetch(seoulLat, seoulLon);
+    return '$noLocation ${weatherSentence(w, place: '서울')}';
   }
   return weatherSentence(await fetch(here.lat, here.lon), place: '현재 위치');
 }
