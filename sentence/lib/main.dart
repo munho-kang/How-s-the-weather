@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'weather.dart';
+
 void main() {
   runApp(const WeatherApp());
 }
@@ -19,7 +21,9 @@ class WeatherApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.fetch = fetchWeather});
+
+  final Future<Weather> Function() fetch;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -28,8 +32,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String _message = '아래 버튼을 누르고 "오늘 날씨가 뭐야?"라고 물어보세요.';
 
-  void _onAsk() {
-    setState(() => _message = '날씨 기능은 준비 중입니다.');
+  Future<void> _onAsk() async {
+    setState(() => _message = '날씨를 확인하고 있어요...');
+    try {
+      final weather = await widget.fetch();
+      setState(() => _message = weather.toSentence());
+    } catch (_) {
+      setState(() => _message = '날씨 정보를 가져오지 못했어요. 다시 시도해 주세요.');
+    }
   }
 
   @override
