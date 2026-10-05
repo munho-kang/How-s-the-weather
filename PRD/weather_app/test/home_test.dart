@@ -14,7 +14,10 @@ void main() {
     expect(find.text('날씨 물어보기'), findsOneWidget);
     final message = find.textContaining('오늘 날씨가 뭐야?');
     expect(message, findsOneWidget);
-    expect(tester.widget<Text>(message).style!.fontSize, greaterThanOrEqualTo(28));
+    expect(
+      tester.widget<Text>(message).style!.fontSize,
+      greaterThanOrEqualTo(28),
+    );
 
     // 버튼은 화면 높이의 절반 이상 (PRD #6-4)
     final buttonHeight = tester.getSize(find.byType(ElevatedButton)).height;
@@ -39,5 +42,23 @@ void main() {
       ),
     );
     semantics.dispose();
+  });
+
+  testWidgets('버튼을 누르면 날씨 문장이 화면에 나온다', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(home: HomePage(answer: () async => '오늘 서울 날씨는 맑음입니다.')),
+    );
+    await tester.tap(find.text('날씨 물어보기'));
+    await tester.pumpAndSettle();
+    expect(find.text('오늘 서울 날씨는 맑음입니다.'), findsOneWidget);
+  });
+
+  testWidgets('날씨를 못 가져오면 다시 누르라고 안내한다', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(home: HomePage(answer: () async => throw Exception('x'))),
+    );
+    await tester.tap(find.text('날씨 물어보기'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('다시 눌러 주세요'), findsOneWidget);
   });
 }
