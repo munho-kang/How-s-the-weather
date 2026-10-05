@@ -17,7 +17,7 @@ Future<Coords?> currentPosition() async {
     final p = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.low, // 날씨는 동네 수준이면 충분
-        timeLimit: Duration(seconds: 4),
+        timeLimit: Duration(seconds: 3),
       ),
     );
     return (lat: p.latitude, lon: p.longitude);
