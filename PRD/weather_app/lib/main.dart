@@ -99,6 +99,9 @@ class _HomePageState extends State<HomePage> {
                 // VoiceOver가 안내·결과 문장을 한 덩어리로 읽도록 묶는다 (PRD #3-1, #7-4)
                 child: Semantics(
                   container: true,
+                  // 글자가 바뀌어도 VoiceOver가 자동으로 읽지 않게 한다.
+                  // 앱 음성이 이미 읽어주므로 두 번 들리면 안 된다 (PRD #7-4, #9-3)
+                  liveRegion: false,
                   button: _lastSpoken != null,
                   hint: _lastSpoken == null ? null : '두 번 탭하면 다시 들려줍니다',
                   // 결과 글을 누르면 방금 들은 내용을 다시 읽는다 (PRD #4-3)
