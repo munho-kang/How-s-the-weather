@@ -32,7 +32,7 @@ Future<String?> listenOnce() async {
   });
 }
 
-Future<void> speak(String text) async {
+Future<void> speakText(String text) async {
   await _tts.setLanguage('ko-KR');
   await _tts.speak(text);
 }
