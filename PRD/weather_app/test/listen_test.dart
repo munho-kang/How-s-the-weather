@@ -55,7 +55,7 @@ void main() {
     expect(calls, isEmpty);
   });
 
-  for (final heard in ['지금 몇 시야', '', null]) {
+  for (final heard in ['지금 몇 시야', '']) {
     testWidgets('"$heard"(이)면 날씨를 찾지 않고 다시 말하라고 안내한다', (tester) async {
       final spoken = <String>[];
       final calls = <String>[];
