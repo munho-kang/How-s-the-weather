@@ -74,6 +74,8 @@ class _HomePageState extends State<HomePage> {
     if (mounted) await _say(text);
   }
 
+  void _replay() => _say(_lastSpoken!);
+
   /// 화면 글자를 바꾸고 같은 문장을 소리로 읽는다 (PRD #9-3)
   Future<void> _say(String text) async {
     setState(() => _message = _lastSpoken = text);
@@ -102,14 +104,16 @@ class _HomePageState extends State<HomePage> {
                   // 글자가 바뀌어도 VoiceOver가 자동으로 읽지 않게 한다.
                   // 앱 음성이 이미 읽어주므로 두 번 들리면 안 된다 (PRD #7-4, #9-3)
                   liveRegion: false,
+                  // 문장·다시 듣기 안내·누르기 동작을 한 칸에 모아 함께 읽히게 한다
+                  label: _message,
+                  excludeSemantics: true,
                   button: _lastSpoken != null,
+                  onTap: _lastSpoken == null ? null : _replay,
                   hint: _lastSpoken == null ? null : '두 번 탭하면 다시 들려줍니다',
                   // 결과 글을 누르면 방금 들은 내용을 다시 읽는다 (PRD #4-3)
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTap: _lastSpoken == null
-                        ? null
-                        : () => _say(_lastSpoken!),
+                    onTap: _lastSpoken == null ? null : _replay,
                     child: Center(
                       child: SingleChildScrollView(
                         child: Text(
