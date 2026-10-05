@@ -31,8 +31,15 @@ class WeatherApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final String _message = '아래 노란 버튼을 누르고\n"오늘 날씨가 뭐야?"라고 말해 보세요.';
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +50,24 @@ class HomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Spacer(flex: 2),
+              // 안내·결과 문장, 28pt 이상 (PRD #6-3)
+              Expanded(
+                flex: 2,
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      _message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 30,
+                        height: 1.4,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               // 화면 높이의 절반 이상을 차지하는 버튼 하나 (PRD #4-1, #6-4)
               Expanded(
                 flex: 3,
