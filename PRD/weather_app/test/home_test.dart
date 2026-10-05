@@ -59,7 +59,7 @@ void main() {
     expect(find.text('오늘 서울 날씨는 맑음입니다.'), findsOneWidget);
   });
 
-  testWidgets('날씨를 못 가져오면 다시 누르라고 안내한다', (tester) async {
+  testWidgets('날씨를 못 가져오면 인터넷 확인 후 다시 누르라고 안내한다', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: HomePage(
@@ -71,6 +71,6 @@ void main() {
     );
     await tester.tap(find.text('날씨 물어보기'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('다시 눌러 주세요'), findsOneWidget);
+    expect(find.text(noInternet), findsOneWidget);
   });
 }

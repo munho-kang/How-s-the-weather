@@ -34,6 +34,8 @@ class WeatherApp extends StatelessWidget {
   }
 }
 
+// 날씨를 못 가져오는 대부분의 원인은 인터넷 연결이다 (PRD #4-5, #10-6)
+const noInternet = '날씨를 가져오지 못했어요. 인터넷 연결을 확인하고 다시 버튼을 눌러 주세요.';
 const askAgain = '잘 알아듣지 못했어요. 다시 버튼을 누르고 "오늘 날씨가 뭐야?"라고 말해 주세요.';
 
 class HomePage extends StatefulWidget {
@@ -84,7 +86,7 @@ class _HomePageState extends State<HomePage> {
       try {
         text = await widget.answer();
       } catch (_) {
-        text = '날씨를 가져오지 못했어요. 다시 눌러 주세요.';
+        text = noInternet;
       }
       if (mounted) await _say(text);
     } finally {
