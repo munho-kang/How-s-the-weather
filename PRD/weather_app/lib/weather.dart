@@ -67,3 +67,9 @@ String describeSky(int code) {
   if (code <= 86) return '눈보라';
   return '천둥 번개';
 }
+
+/// 비 올 확률이 50% 이상이거나 지금 비·눈이 오면 우산이 필요하다 (PRD #4-3)
+bool needsUmbrella(Weather w) => w.rainChance >= 50 || w.code >= 51;
+
+String umbrellaAdvice(Weather w) =>
+    needsUmbrella(w) ? '우산을 챙기세요.' : '우산은 챙기지 않아도 돼요.';
