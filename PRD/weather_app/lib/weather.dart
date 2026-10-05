@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'location.dart';
+
 /// 오늘 날씨 (PRD #4-3)
 class Weather {
   const Weather({
@@ -37,6 +39,7 @@ Future<Weather> fetchWeather({
   required double latitude,
   required double longitude,
   http.Client? client,
+  Duration timeout = const Duration(seconds: 4),
 }) async {
   final uri = Uri.https('api.open-meteo.com', '/v1/forecast', {
     'latitude': '$latitude',
@@ -47,7 +50,9 @@ Future<Weather> fetchWeather({
     'timezone': 'auto', // "오늘"은 사용자 위치의 시간 기준 (PRD #8-5)
     'forecast_days': '1',
   });
-  final res = await (client?.get(uri) ?? http.get(uri));
+  // 10초 안에 답해야 하므로 오래 걸리면 포기한다 (PRD #10-2)
+  // 말 끝난 뒤 듣기 종료 2초 + 위치 3초 + 날씨 4초 = 최악 9초
+  final res = await (client?.get(uri) ?? http.get(uri)).timeout(timeout);
   if (res.statusCode != 200) {
     throw http.ClientException('날씨 서버 응답 ${res.statusCode}', uri);
   }
@@ -86,3 +91,25 @@ String weatherSentence(Weather w, {required String place}) =>
     '지금 기온은 ${degrees(w.temperature)}, '
     '최고 ${degrees(w.max)}, 최저 ${degrees(w.min)}입니다. '
     '비 올 확률은 ${w.rainChance}퍼센트, ${umbrellaAdvice(w)}';
+
+const noLocation = '위치를 알 수 없어 서울 날씨를 알려드려요.';
+
+/// 서울 시청 좌표
+const seoulLat = 37.5665, seoulLon = 126.978;
+
+Future<Weather> _fetch(double lat, double lon) =>
+    fetchWeather(latitude: lat, longitude: lon);
+
+/// 현재 위치의 날씨 답 문장 (PRD #4-4)
+Future<String> weatherAnswer({
+  Future<Coords?> Function() locate = currentPosition,
+  Future<Weather> Function(double lat, double lon) fetch = _fetch,
+}) async {
+  final here = await locate();
+  if (here == null) {
+    // 위치를 모르면 이유를 말하고 서울 날씨로 대신한다 (PRD #9-1, #10-4)
+    final w = await fetch(seoulLat, seoulLon);
+    return '$noLocation ${weatherSentence(w, place: '서울')}';
+  }
+  return weatherSentence(await fetch(here.lat, here.lon), place: '현재 위치');
+}

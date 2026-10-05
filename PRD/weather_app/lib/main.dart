@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'voice.dart';
@@ -34,20 +35,17 @@ class WeatherApp extends StatelessWidget {
   }
 }
 
-/// 서울 시청 좌표
-const seoulLat = 37.5665, seoulLon = 126.978;
-
-Future<String> seoulWeatherAnswer() async => weatherSentence(
-  await fetchWeather(latitude: seoulLat, longitude: seoulLon),
-  place: '서울',
-);
-
+// 날씨를 못 가져오는 대부분의 원인은 인터넷 연결이다 (PRD #4-5, #10-6)
+const noInternet = '날씨를 가져오지 못했어요. 인터넷 연결을 확인하고 다시 버튼을 눌러 주세요.';
+final noMic = kIsWeb
+    ? '마이크를 쓸 수 없어요. 브라우저 주소창 옆 마이크 아이콘에서 마이크를 허용한 뒤 다시 버튼을 눌러 주세요.'
+    : '마이크를 쓸 수 없어요. 설정 앱에서 오늘 날씨 알리미를 찾아 마이크와 음성 인식을 켠 뒤 다시 버튼을 눌러 주세요.';
 const askAgain = '잘 알아듣지 못했어요. 다시 버튼을 누르고 "오늘 날씨가 뭐야?"라고 말해 주세요.';
 
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
-    this.answer = seoulWeatherAnswer,
+    this.answer = weatherAnswer,
     this.speak = speakText,
     this.listen = listenOnce,
   });
@@ -82,7 +80,12 @@ class _HomePageState extends State<HomePage> {
       final heard = await widget.listen();
       if (!mounted) return;
       // 못 알아들었거나 날씨 질문이 아니면 다음 행동을 안내한다 (PRD #4-5, #10-6)
-      if (heard == null || !isWeatherQuestion(heard)) {
+      if (heard == null) {
+        // 마이크·음성 인식 권한이 없거나 쓸 수 없다 (PRD #4-5)
+        await _say(noMic, remember: false);
+        return;
+      }
+      if (!isWeatherQuestion(heard)) {
         await _say(askAgain, remember: false);
         return;
       }
@@ -92,7 +95,7 @@ class _HomePageState extends State<HomePage> {
       try {
         text = await widget.answer();
       } catch (_) {
-        text = '날씨를 가져오지 못했어요. 다시 눌러 주세요.';
+        text = noInternet;
       }
       if (mounted) await _say(text);
     } finally {
