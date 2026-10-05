@@ -73,3 +73,16 @@ bool needsUmbrella(Weather w) => w.rainChance >= 50 || w.code >= 51;
 
 String umbrellaAdvice(Weather w) =>
     needsUmbrella(w) ? '우산을 챙기세요.' : '우산은 챙기지 않아도 돼요.';
+
+/// 소리로 듣기 좋게 기온을 읽는다. 예: -3.4 → "영하 3도"
+String degrees(double t) {
+  final n = t.round();
+  return n < 0 ? '영하 ${-n}도' : '$n도';
+}
+
+/// 5가지 정보를 모두 담은 날씨 문장 (PRD #10-3)
+String weatherSentence(Weather w, {required String place}) =>
+    '오늘 $place 날씨는 ${describeSky(w.code)}입니다. '
+    '지금 기온은 ${degrees(w.temperature)}, '
+    '최고 ${degrees(w.max)}, 최저 ${degrees(w.min)}입니다. '
+    '비 올 확률은 ${w.rainChance}퍼센트, ${umbrellaAdvice(w)}';
