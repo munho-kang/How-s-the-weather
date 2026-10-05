@@ -42,6 +42,8 @@ Future<String> seoulWeatherAnswer() async => weatherSentence(
   place: '서울',
 );
 
+const askAgain = '잘 알아듣지 못했어요. 다시 버튼을 누르고 "오늘 날씨가 뭐야?"라고 말해 주세요.';
+
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
@@ -77,8 +79,13 @@ class _HomePageState extends State<HomePage> {
       await _say('말씀하세요.', remember: false);
       if (!mounted) return;
       setState(() => _message = '듣고 있어요...');
-      await widget.listen();
+      final heard = await widget.listen();
       if (!mounted) return;
+      // 못 알아들었거나 날씨 질문이 아니면 다음 행동을 안내한다 (PRD #4-5, #10-6)
+      if (heard == null || !isWeatherQuestion(heard)) {
+        await _say(askAgain, remember: false);
+        return;
+      }
 
       setState(() => _message = '날씨를 확인하고 있어요.');
       String text;
