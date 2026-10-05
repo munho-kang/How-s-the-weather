@@ -39,6 +39,7 @@ Future<Weather> fetchWeather({
   required double latitude,
   required double longitude,
   http.Client? client,
+  Duration timeout = const Duration(seconds: 5),
 }) async {
   final uri = Uri.https('api.open-meteo.com', '/v1/forecast', {
     'latitude': '$latitude',
@@ -49,7 +50,8 @@ Future<Weather> fetchWeather({
     'timezone': 'auto', // "오늘"은 사용자 위치의 시간 기준 (PRD #8-5)
     'forecast_days': '1',
   });
-  final res = await (client?.get(uri) ?? http.get(uri));
+  // 10초 안에 답해야 하므로 5초가 넘으면 포기한다 (PRD #10-2)
+  final res = await (client?.get(uri) ?? http.get(uri)).timeout(timeout);
   if (res.statusCode != 200) {
     throw http.ClientException('날씨 서버 응답 ${res.statusCode}', uri);
   }
