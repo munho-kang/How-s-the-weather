@@ -60,6 +60,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String? _lastSpoken;
   String _message = '아래 노란 버튼을 누르고\n"오늘 날씨가 뭐야?"라고 말해 보세요.';
 
   Future<void> _onAsk() async {
@@ -75,7 +76,7 @@ class _HomePageState extends State<HomePage> {
 
   /// 화면 글자를 바꾸고 같은 문장을 소리로 읽는다 (PRD #9-3)
   Future<void> _say(String text) async {
-    setState(() => _message = text);
+    setState(() => _message = _lastSpoken = text);
     try {
       await widget.speak(text);
     } catch (_) {
@@ -95,18 +96,27 @@ class _HomePageState extends State<HomePage> {
               // 안내·결과 문장, 28pt 이상 (PRD #6-3)
               Expanded(
                 flex: 2,
-                child: Center(
-                  // VoiceOver가 안내·결과 문장을 한 덩어리로 읽도록 묶는다 (PRD #3-1, #7-4)
-                  child: Semantics(
-                    container: true,
-                    child: SingleChildScrollView(
-                      child: Text(
-                        _message,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 30,
-                          height: 1.4,
-                          color: textColor,
+                // VoiceOver가 안내·결과 문장을 한 덩어리로 읽도록 묶는다 (PRD #3-1, #7-4)
+                child: Semantics(
+                  container: true,
+                  button: _lastSpoken != null,
+                  hint: _lastSpoken == null ? null : '두 번 탭하면 다시 들려줍니다',
+                  // 결과 글을 누르면 방금 들은 내용을 다시 읽는다 (PRD #4-3)
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _lastSpoken == null
+                        ? null
+                        : () => _say(_lastSpoken!),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: Text(
+                          _message,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 30,
+                            height: 1.4,
+                            color: textColor,
+                          ),
                         ),
                       ),
                     ),
