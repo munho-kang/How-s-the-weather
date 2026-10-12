@@ -11,6 +11,15 @@
 - 날씨 정보: [Open-Meteo](https://open-meteo.com) (가입이나 키 없이 쓰는 무료 날씨 서비스)
 - 프로젝트 위치: [`PRD/weather_app/`](PRD/weather_app)
 
+## 🌐 웹에서 바로 써보기
+
+설치 없이 아래 링크를 누르면 브라우저에서 바로 실행됩니다. (크롬 권장, 마이크·위치 권한을 허용해 주세요.)
+
+| 버전 | 링크 |
+| --- | --- |
+| sentence 버전 | https://munho-kang.github.io/How-s-the-weather/sentence/ |
+| PRD 버전 | https://munho-kang.github.io/How-s-the-weather/prd/ |
+
 ---
 
 ## 이런 분을 위해 만들었어요
