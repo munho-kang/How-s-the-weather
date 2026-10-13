@@ -20,6 +20,8 @@
 | sentence 버전 | https://munho-kang.github.io/How-s-the-weather/sentence/ |
 | PRD 버전 | https://munho-kang.github.io/How-s-the-weather/prd/ |
 
+📊 **발표자료**: https://munho-kang.github.io/How-s-the-weather/presentation/
+
 ---
 
 ## 이런 분을 위해 만들었어요
