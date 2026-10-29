@@ -114,9 +114,12 @@ String _vsYesterday(
 
 /// 최고·최저 기온을 어제와 비교한 문장 (PRD #4-6)
 /// 예: "최고 기온은 어제보다 3도 높아 더 덥고, 최저 기온은 어제와 비슷해요."
-String compareYesterday(Weather w) {
-  final high = _vsYesterday('최고', w.max, w.yesterdayMax!, end: false);
-  final low = _vsYesterday('최저', w.min, w.yesterdayMin!, end: true);
+/// 어제 기온을 못 받았으면 null — 비교 문장만 뺀다 (PRD #9-6)
+String? compareYesterday(Weather w) {
+  final yMax = w.yesterdayMax, yMin = w.yesterdayMin;
+  if (yMax == null || yMin == null) return null;
+  final high = _vsYesterday('최고', w.max, yMax, end: false);
+  final low = _vsYesterday('최저', w.min, yMin, end: true);
   if (high.endsWith('비슷하고') && low.endsWith('비슷해요')) {
     return '최고·최저 기온 모두 어제와 비슷해요.';
   }
@@ -125,12 +128,14 @@ String compareYesterday(Weather w) {
 
 /// 5가지 정보를 모두 담은 날씨 문장 (PRD #10-3)
 /// 어제 비교는 최고·최저 기온 바로 뒤에 넣는다 (PRD #4-6, #10-9)
-String weatherSentence(Weather w, {required String place}) =>
-    '오늘 $place 날씨는 ${describeSky(w.code)}입니다. '
-    '지금 기온은 ${degrees(w.temperature)}, '
-    '최고 ${degrees(w.max)}, 최저 ${degrees(w.min)}입니다. '
-    '${compareYesterday(w)} '
-    '비 올 확률은 ${w.rainChance}퍼센트, ${umbrellaAdvice(w)}';
+String weatherSentence(Weather w, {required String place}) {
+  final vs = compareYesterday(w);
+  return '오늘 $place 날씨는 ${describeSky(w.code)}입니다. '
+      '지금 기온은 ${degrees(w.temperature)}, '
+      '최고 ${degrees(w.max)}, 최저 ${degrees(w.min)}입니다. '
+      '${vs == null ? '' : '$vs '}'
+      '비 올 확률은 ${w.rainChance}퍼센트, ${umbrellaAdvice(w)}';
+}
 
 const noLocation = '위치를 알 수 없어 서울 날씨를 알려드려요.';
 
