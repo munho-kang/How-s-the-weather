@@ -12,6 +12,8 @@ class Weather {
     required this.max,
     required this.min,
     required this.rainChance,
+    this.yesterdayMax,
+    this.yesterdayMin,
   });
 
   final int code; // WMO 날씨 코드
@@ -19,17 +21,26 @@ class Weather {
   final double max;
   final double min;
   final int rainChance; // 퍼센트
+  final double? yesterdayMax; // 어제 기온, 못 받으면 null (PRD #4-6)
+  final double? yesterdayMin;
 
+  /// daily 배열은 [어제, 오늘] 순서 (past_days=1)
   factory Weather.fromJson(Map<String, dynamic> json) {
     final current = json['current'];
     final daily = json['daily'];
+    final List maxes = daily['temperature_2m_max'];
+    final List mins = daily['temperature_2m_min'];
+    double? yesterday(List l) =>
+        l.length > 1 ? (l.first as num?)?.toDouble() : null;
     return Weather(
       code: current['weather_code'] as int,
       temperature: (current['temperature_2m'] as num).toDouble(),
-      max: (daily['temperature_2m_max'][0] as num).toDouble(),
-      min: (daily['temperature_2m_min'][0] as num).toDouble(),
-      rainChance: (daily['precipitation_probability_max'][0] as num? ?? 0)
+      max: (maxes.last as num).toDouble(),
+      min: (mins.last as num).toDouble(),
+      rainChance: (daily['precipitation_probability_max'].last as num? ?? 0)
           .toInt(),
+      yesterdayMax: yesterday(maxes),
+      yesterdayMin: yesterday(mins),
     );
   }
 }
@@ -49,6 +60,7 @@ Future<Weather> fetchWeather({
         'temperature_2m_max,temperature_2m_min,precipitation_probability_max',
     'timezone': 'auto', // "오늘"은 사용자 위치의 시간 기준 (PRD #8-5)
     'forecast_days': '1',
+    'past_days': '1', // 어제 기온도 같은 요청으로 받는다 (PRD #4-6)
   });
   // 10초 안에 답해야 하므로 오래 걸리면 포기한다 (PRD #10-2)
   // 말 끝난 뒤 듣기 종료 2초 + 위치 3초 + 날씨 4초 = 최악 9초
@@ -85,12 +97,45 @@ String degrees(double t) {
   return n < 0 ? '영하 ${-n}도' : '$n도';
 }
 
+/// 한 기온을 어제와 비교한 말. 1도 이하 차이는 비슷하다고 한다 (PRD #9-5)
+/// [end]면 문장을 끝맺고("더워요"), 아니면 뒤로 잇는다("덥고").
+String _vsYesterday(
+  String which,
+  double today,
+  double yesterday, {
+  required bool end,
+}) {
+  final diff = today.round() - yesterday.round();
+  if (diff.abs() <= 1) return '$which 기온은 어제와 ${end ? '비슷해요' : '비슷하고'}';
+  return diff > 0
+      ? '$which 기온은 어제보다 $diff도 높아 더 ${end ? '더워요' : '덥고'}'
+      : '$which 기온은 어제보다 ${-diff}도 낮아 더 ${end ? '추워요' : '춥고'}';
+}
+
+/// 최고·최저 기온을 어제와 비교한 문장 (PRD #4-6)
+/// 예: "최고 기온은 어제보다 3도 높아 더 덥고, 최저 기온은 어제와 비슷해요."
+/// 어제 기온을 못 받았으면 null — 비교 문장만 뺀다 (PRD #9-6)
+String? compareYesterday(Weather w) {
+  final yMax = w.yesterdayMax, yMin = w.yesterdayMin;
+  if (yMax == null || yMin == null) return null;
+  final high = _vsYesterday('최고', w.max, yMax, end: false);
+  final low = _vsYesterday('최저', w.min, yMin, end: true);
+  if (high.endsWith('비슷하고') && low.endsWith('비슷해요')) {
+    return '최고·최저 기온 모두 어제와 비슷해요.';
+  }
+  return '$high, $low.';
+}
+
 /// 5가지 정보를 모두 담은 날씨 문장 (PRD #10-3)
-String weatherSentence(Weather w, {required String place}) =>
-    '오늘 $place 날씨는 ${describeSky(w.code)}입니다. '
-    '지금 기온은 ${degrees(w.temperature)}, '
-    '최고 ${degrees(w.max)}, 최저 ${degrees(w.min)}입니다. '
-    '비 올 확률은 ${w.rainChance}퍼센트, ${umbrellaAdvice(w)}';
+/// 어제 비교는 최고·최저 기온 바로 뒤에 넣는다 (PRD #4-6, #10-9)
+String weatherSentence(Weather w, {required String place}) {
+  final vs = compareYesterday(w);
+  return '오늘 $place 날씨는 ${describeSky(w.code)}입니다. '
+      '지금 기온은 ${degrees(w.temperature)}, '
+      '최고 ${degrees(w.max)}, 최저 ${degrees(w.min)}입니다. '
+      '${vs == null ? '' : '$vs '}'
+      '비 올 확률은 ${w.rainChance}퍼센트, ${umbrellaAdvice(w)}';
+}
 
 const noLocation = '위치를 알 수 없어 서울 날씨를 알려드려요.';
 
