@@ -97,6 +97,32 @@ String degrees(double t) {
   return n < 0 ? '영하 ${-n}도' : '$n도';
 }
 
+/// 한 기온을 어제와 비교한 말. 1도 이하 차이는 비슷하다고 한다 (PRD #9-5)
+/// [end]면 문장을 끝맺고("더워요"), 아니면 뒤로 잇는다("덥고").
+String _vsYesterday(
+  String which,
+  double today,
+  double yesterday, {
+  required bool end,
+}) {
+  final diff = today.round() - yesterday.round();
+  if (diff.abs() <= 1) return '$which 기온은 어제와 ${end ? '비슷해요' : '비슷하고'}';
+  return diff > 0
+      ? '$which 기온은 어제보다 $diff도 높아 더 ${end ? '더워요' : '덥고'}'
+      : '$which 기온은 어제보다 ${-diff}도 낮아 더 ${end ? '추워요' : '춥고'}';
+}
+
+/// 최고·최저 기온을 어제와 비교한 문장 (PRD #4-6)
+/// 예: "최고 기온은 어제보다 3도 높아 더 덥고, 최저 기온은 어제와 비슷해요."
+String compareYesterday(Weather w) {
+  final high = _vsYesterday('최고', w.max, w.yesterdayMax!, end: false);
+  final low = _vsYesterday('최저', w.min, w.yesterdayMin!, end: true);
+  if (high.endsWith('비슷하고') && low.endsWith('비슷해요')) {
+    return '최고·최저 기온 모두 어제와 비슷해요.';
+  }
+  return '$high, $low.';
+}
+
 /// 5가지 정보를 모두 담은 날씨 문장 (PRD #10-3)
 String weatherSentence(Weather w, {required String place}) =>
     '오늘 $place 날씨는 ${describeSky(w.code)}입니다. '
