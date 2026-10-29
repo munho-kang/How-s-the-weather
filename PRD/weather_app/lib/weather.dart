@@ -124,10 +124,12 @@ String compareYesterday(Weather w) {
 }
 
 /// 5가지 정보를 모두 담은 날씨 문장 (PRD #10-3)
+/// 어제 비교는 최고·최저 기온 바로 뒤에 넣는다 (PRD #4-6, #10-9)
 String weatherSentence(Weather w, {required String place}) =>
     '오늘 $place 날씨는 ${describeSky(w.code)}입니다. '
     '지금 기온은 ${degrees(w.temperature)}, '
     '최고 ${degrees(w.max)}, 최저 ${degrees(w.min)}입니다. '
+    '${compareYesterday(w)} '
     '비 올 확률은 ${w.rainChance}퍼센트, ${umbrellaAdvice(w)}';
 
 const noLocation = '위치를 알 수 없어 서울 날씨를 알려드려요.';

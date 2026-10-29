@@ -14,6 +14,8 @@ const rainy = Weather(
   max: 12,
   min: 7,
   rainChance: 80,
+  yesterdayMax: 12,
+  yesterdayMin: 7,
 );
 
 void main() {

@@ -12,6 +12,8 @@ const clear = Weather(
   max: 19.3,
   min: 13.3,
   rainChance: 10,
+  yesterdayMax: 16.4,
+  yesterdayMin: 13.0,
 );
 
 void main() {
@@ -52,6 +54,7 @@ void main() {
     expect(
       weatherSentence(clear, place: '서울'),
       '오늘 서울 날씨는 맑음입니다. 지금 기온은 14도, 최고 19도, 최저 13도입니다. '
+      '최고 기온은 어제보다 3도 높아 더 덥고, 최저 기온은 어제와 비슷해요. '
       '비 올 확률은 10퍼센트, 우산은 챙기지 않아도 돼요.',
     );
   });
