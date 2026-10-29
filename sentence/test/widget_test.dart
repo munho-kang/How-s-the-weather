@@ -5,21 +5,26 @@ import 'package:weather_app/main.dart';
 import 'package:weather_app/voice.dart';
 import 'package:weather_app/weather.dart';
 
-Future<Weather> fakeWeather() async =>
-    Weather(temperature: 20, max: 25, min: 15, rainChance: 30, code: 3);
+Future<Weather> fakeWeather() async => Weather(
+  temperature: 20,
+  max: 25,
+  min: 15,
+  rainChance: 30,
+  code: 3,
+  yesterdayMax: 22,
+);
 
 Widget app({
   Future<Weather> Function() fetch = fakeWeather,
   String? heard = '오늘 날씨가 뭐야',
   List<String>? spoken,
-}) =>
-    MaterialApp(
-      home: HomePage(
-        fetch: fetch,
-        listen: () async => heard,
-        speak: (t) async => spoken?.add(t),
-      ),
-    );
+}) => MaterialApp(
+  home: HomePage(
+    fetch: fetch,
+    listen: () async => heard,
+    speak: (t) async => spoken?.add(t),
+  ),
+);
 
 void main() {
   test('날씨 질문인지 알아본다', () {

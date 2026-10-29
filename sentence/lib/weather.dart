@@ -8,6 +8,7 @@ class Weather {
   final double min;
   final int rainChance;
   final int code;
+  final double yesterdayMax;
 
   Weather({
     required this.temperature,
@@ -15,17 +16,20 @@ class Weather {
     required this.min,
     required this.rainChance,
     required this.code,
+    required this.yesterdayMax,
   });
 
+  // daily 배열은 [어제, 오늘] 순서 (past_days=1)
   factory Weather.fromJson(Map<String, dynamic> json) {
     final current = json['current'];
     final daily = json['daily'];
     return Weather(
       temperature: (current['temperature_2m'] as num).toDouble(),
       code: current['weather_code'] as int,
-      max: (daily['temperature_2m_max'][0] as num).toDouble(),
-      min: (daily['temperature_2m_min'][0] as num).toDouble(),
-      rainChance: (daily['precipitation_probability_max'][0] as num).toInt(),
+      max: (daily['temperature_2m_max'][1] as num).toDouble(),
+      min: (daily['temperature_2m_min'][1] as num).toDouble(),
+      rainChance: (daily['precipitation_probability_max'][1] as num).toInt(),
+      yesterdayMax: (daily['temperature_2m_max'][0] as num).toDouble(),
     );
   }
 
@@ -35,7 +39,15 @@ class Weather {
       '오늘 서울 날씨는 $description입니다. '
       '현재 기온은 ${temperature.round()}도이고, '
       '최고 ${max.round()}도, 최저 ${min.round()}도입니다. '
-      '비 올 확률은 $rainChance퍼센트입니다.';
+      '비 올 확률은 $rainChance퍼센트입니다. '
+      '${compareYesterday()}';
+
+  String compareYesterday() {
+    final diff = max.round() - yesterdayMax.round();
+    if (diff > 0) return '최고 기온은 어제보다 $diff도 높습니다.';
+    if (diff < 0) return '최고 기온은 어제보다 ${-diff}도 낮습니다.';
+    return '최고 기온은 어제와 비슷합니다.';
+  }
 }
 
 // WMO 날씨 코드 → 한국어
@@ -58,9 +70,11 @@ Future<Weather> fetchWeather() async {
     'latitude': '37.5665',
     'longitude': '126.978',
     'current': 'temperature_2m,weather_code',
-    'daily': 'temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+    'daily':
+        'temperature_2m_max,temperature_2m_min,precipitation_probability_max',
     'timezone': 'Asia/Seoul',
     'forecast_days': '1',
+    'past_days': '1',
   });
   final res = await http.get(uri);
   if (res.statusCode != 200) {
