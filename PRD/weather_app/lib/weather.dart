@@ -12,6 +12,8 @@ class Weather {
     required this.max,
     required this.min,
     required this.rainChance,
+    this.yesterdayMax,
+    this.yesterdayMin,
   });
 
   final int code; // WMO 날씨 코드
@@ -19,17 +21,26 @@ class Weather {
   final double max;
   final double min;
   final int rainChance; // 퍼센트
+  final double? yesterdayMax; // 어제 기온, 못 받으면 null (PRD #4-6)
+  final double? yesterdayMin;
 
+  /// daily 배열은 [어제, 오늘] 순서 (past_days=1)
   factory Weather.fromJson(Map<String, dynamic> json) {
     final current = json['current'];
     final daily = json['daily'];
+    final List maxes = daily['temperature_2m_max'];
+    final List mins = daily['temperature_2m_min'];
+    double? yesterday(List l) =>
+        l.length > 1 ? (l.first as num?)?.toDouble() : null;
     return Weather(
       code: current['weather_code'] as int,
       temperature: (current['temperature_2m'] as num).toDouble(),
-      max: (daily['temperature_2m_max'][0] as num).toDouble(),
-      min: (daily['temperature_2m_min'][0] as num).toDouble(),
-      rainChance: (daily['precipitation_probability_max'][0] as num? ?? 0)
+      max: (maxes.last as num).toDouble(),
+      min: (mins.last as num).toDouble(),
+      rainChance: (daily['precipitation_probability_max'].last as num? ?? 0)
           .toInt(),
+      yesterdayMax: yesterday(maxes),
+      yesterdayMin: yesterday(mins),
     );
   }
 }
@@ -49,6 +60,7 @@ Future<Weather> fetchWeather({
         'temperature_2m_max,temperature_2m_min,precipitation_probability_max',
     'timezone': 'auto', // "오늘"은 사용자 위치의 시간 기준 (PRD #8-5)
     'forecast_days': '1',
+    'past_days': '1', // 어제 기온도 같은 요청으로 받는다 (PRD #4-6)
   });
   // 10초 안에 답해야 하므로 오래 걸리면 포기한다 (PRD #10-2)
   // 말 끝난 뒤 듣기 종료 2초 + 위치 3초 + 날씨 4초 = 최악 9초

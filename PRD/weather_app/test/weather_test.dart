@@ -60,13 +60,14 @@ void main() {
     final client = MockClient((req) async {
       expect(req.url.host, 'api.open-meteo.com');
       expect(req.url.queryParameters['latitude'], '37.5');
+      expect(req.url.queryParameters['past_days'], '1');
       return http.Response(
         jsonEncode({
           'current': {'temperature_2m': 14.4, 'weather_code': 0},
           'daily': {
-            'temperature_2m_max': [19.3],
-            'temperature_2m_min': [13.3],
-            'precipitation_probability_max': [96],
+            'temperature_2m_max': [16.1, 19.3], // [어제, 오늘]
+            'temperature_2m_min': [12.8, 13.3],
+            'precipitation_probability_max': [20, 96],
           },
         }),
         200,
@@ -79,6 +80,9 @@ void main() {
     );
     expect(w.rainChance, 96);
     expect(w.max, 19.3);
+    expect(w.min, 13.3);
+    expect(w.yesterdayMax, 16.1);
+    expect(w.yesterdayMin, 12.8);
   });
 
   test('서버 오류면 예외를 던진다', () async {
