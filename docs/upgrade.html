@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>어제 비교 업그레이드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f1; --card: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --line: #e3e1da;
+    --s: #2f6fd6; --s-soft: #e6eefb;           /* sentence: 파랑 */
+    --p: #b98b00; --p-soft: #fff4cc;           /* PRD: 노랑 */
+    --good: #1f8a4c; --warn: #c27a00; --bad: #c8372d;
+    --mark-s: #cfe0ff; --mark-p: #ffe07a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141416; --card: #1f1f22; --ink: #f1f1f3; --muted: #a0a0a8; --line: #333338;
+      --s: #7fa8ff; --s-soft: #1c2740; --p: #ffd600; --p-soft: #332b0a;
+      --good: #4cc98a; --warn: #f0b440; --bad: #ff7a6e; --mark-s: #2d4a85; --mark-p: #6b5500;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141416; --card: #1f1f22; --ink: #f1f1f3; --muted: #a0a0a8; --line: #333338;
+    --s: #7fa8ff; --s-soft: #1c2740; --p: #ffd600; --p-soft: #332b0a;
+    --good: #4cc98a; --warn: #f0b440; --bad: #ff7a6e; --mark-s: #2d4a85; --mark-p: #6b5500;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Noto Sans KR", system-ui, sans-serif; line-height: 1.55; }
+  main { max-width: 1040px; margin: 0 auto; padding: 40px 16px 80px; }
+  h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 900; margin: 0 0 8px; letter-spacing: -0.02em; }
+  h2 { font-size: 24px; font-weight: 900; margin: 72px 0 6px; }
+  .lead { color: var(--muted); margin: 0 0 24px; }
+  .sub { color: var(--muted); margin: 0 0 24px; font-size: 15px; }
+  .tag { display: inline-block; font-weight: 700; font-size: 13px; padding: 3px 10px; border-radius: 999px; }
+  .tag.s { background: var(--s-soft); color: var(--s); }
+  .tag.p { background: var(--p-soft); color: var(--p); }
+
+  /* 휴대폰 틀 */
+  .phone { width: 100%; max-width: 260px; border-radius: 28px; border: 6px solid #2a2a2e; overflow: hidden; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,.15); margin: 0 auto; }
+  .phone img { display: block; width: 100%; height: auto; }
+  .phone.sm { max-width: 170px; border-width: 4px; border-radius: 20px; }
+
+  /* 1. 한눈에 */
+  .vs { display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: start; }
+  .vs-mid { align-self: center; font-weight: 900; font-size: 28px; color: var(--muted); }
+  .side { text-align: center; }
+  .side h3 { margin: 0 0 12px; font-size: 20px; }
+  .say { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-top: 14px; font-size: 15px; text-align: left; }
+  .say::before { content: "🔊 "; }
+  mark.s { background: var(--mark-s); color: inherit; padding: 0 2px; border-radius: 4px; }
+  mark.p { background: var(--mark-p); color: inherit; padding: 0 2px; border-radius: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 12px; }
+  .chip { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
+
+  /* 2. 전 → 후 */
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .ba-card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 20px 16px; }
+  .ba-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; margin-top: 14px; }
+  .arrow { font-size: 26px; color: var(--muted); }
+  .cap { font-size: 13px; color: var(--muted); text-align: center; margin-top: 6px; }
+  .plus { margin-top: 14px; font-size: 14px; text-align: center; }
+
+  /* 3. 상황별 */
+  .scene { display: grid; grid-template-columns: 170px 1fr 1fr; gap: 18px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 18px; margin-bottom: 16px; }
+  .scene-head .icon { font-size: 40px; line-height: 1; }
+  .scene-head b { display: block; font-size: 18px; margin-top: 6px; }
+  .temps { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .shot { display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: center; }
+  .shot .phone { max-width: 110px; border-width: 3px; border-radius: 14px; }
+  .verdict { font-size: 14px; }
+  .verdict .q { display: block; margin-top: 4px; }
+  .ok { color: var(--good); font-weight: 700; }
+  .meh { color: var(--warn); font-weight: 700; }
+  .no { color: var(--bad); font-weight: 700; }
+  .scene-labels { display: grid; grid-template-columns: 170px 1fr 1fr; gap: 18px; padding: 0 18px; margin-bottom: 8px; }
+
+  /* 4. 과정 */
+  .flow { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 18px; margin-bottom: 14px; }
+  .flow h3 { margin: 0 0 12px; font-size: 17px; }
+  .steps { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .step { border-radius: 12px; padding: 8px 12px; font-size: 14px; font-weight: 500; }
+  .steps.s .step { background: var(--s-soft); }
+  .steps.p .step { background: var(--p-soft); }
+  .steps .to { color: var(--muted); }
+  .step small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
+  .bars { display: grid; gap: 16px; margin-top: 24px; }
+  .bar-row { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; }
+  .bar-row > span { font-weight: 700; font-size: 15px; }
+  .bar { height: 22px; border-radius: 6px; display: flex; align-items: center; padding: 0 8px; font-size: 13px; font-weight: 700; color: #000; white-space: nowrap; margin: 3px 0; }
+  .bar.s { background: #9cbcf2; }
+  .bar.p { background: #ffd600; }
+
+  .note { background: var(--card); border-left: 5px solid var(--warn); border-radius: 12px; padding: 14px 16px; margin-top: 20px; display: grid; grid-template-columns: 130px 1fr; gap: 16px; align-items: center; }
+  .note .crop { border-radius: 10px; overflow: hidden; border: 3px solid #2a2a2e; height: 150px; background: #000; }
+  .note .crop img { width: 100%; display: block; }
+  .end { margin-top: 72px; text-align: center; font-size: 20px; font-weight: 700; }
+  .end small { display: block; font-size: 14px; color: var(--muted); font-weight: 400; margin-top: 6px; }
+
+  @media (max-width: 720px) {
+    .vs { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .vs-mid { display: none; }
+    .ba { grid-template-columns: 1fr; }
+    .scene, .scene-labels { grid-template-columns: 1fr; }
+    .scene-labels { display: none; }
+    .shot { grid-template-columns: 90px 1fr; }
+    .shot .phone { max-width: 90px; }
+    .say { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>🌡️ 어제와 비교해서 알려주기</h1>
+  <p class="lead">2026년 10월 29일 업그레이드 · 같은 기능을 <span class="tag s">한 문장(sentence)</span> 방식과 <span class="tag p">PRD + Todolist</span> 방식으로 더했어요.</p>
+
+  <!-- 1 -->
+  <h2>1. 한눈에 보기</h2>
+  <p class="sub">10월 29일 실제 날씨로 버튼을 누른 화면이에요. 어제 최고 12도·최저 2도 → 오늘 최고 11도·최저 5도.</p>
+  <div class="vs">
+    <div class="side">
+      <h3><span class="tag s">한 문장</span></h3>
+      <div class="phone"><img src="screens/upgrade/sentence-real.png" alt="한 문장 버전 실제 화면: 오늘 서울 날씨, 최고 기온은 어제보다 1도 낮습니다"></div>
+      <div class="say">…비 올 확률은 76퍼센트입니다. <mark class="s">최고 기온은 어제보다 1도 낮습니다.</mark></div>
+      <div class="chips"><span class="chip">최고 기온만</span><span class="chip">맨 끝에 붙음</span><span class="chip">숫자만</span></div>
+    </div>
+    <div class="vs-mid">VS</div>
+    <div class="side">
+      <h3><span class="tag p">PRD</span></h3>
+      <div class="phone"><img src="screens/upgrade/prd-real.png" alt="PRD 버전 실제 화면: 최고 기온은 어제와 비슷하고, 최저 기온은 어제보다 3도 높아 더 더워요"></div>
+      <div class="say">…최고 11도, 최저 5도입니다. <mark class="p">최고 기온은 어제와 비슷하고, 최저 기온은 어제보다 3도 높아 더 더워요.</mark> 비 올 확률은…</div>
+      <div class="chips"><span class="chip">최고 + 최저</span><span class="chip">기온 바로 뒤</span><span class="chip">숫자 + 느낌</span></div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <h2>2. 업그레이드 전 → 후</h2>
+  <p class="sub">원래 답 화면과 오늘 바뀐 답 화면이에요.</p>
+  <div class="ba">
+    <div class="ba-card">
+      <span class="tag s">한 문장</span>
+      <div class="ba-row">
+        <div><div class="phone sm"><img src="screens/sentence/result.png" alt="업그레이드 전 한 문장 버전 답 화면"></div><div class="cap">전</div></div>
+        <div class="arrow">→</div>
+        <div><div class="phone sm"><img src="screens/upgrade/sentence-real.png" alt="업그레이드 후 한 문장 버전 답 화면"></div><div class="cap">후</div></div>
+      </div>
+      <div class="plus">➕ 답 <b>맨 끝</b>에 한 문장</div>
+    </div>
+    <div class="ba-card">
+      <span class="tag p">PRD</span>
+      <div class="ba-row">
+        <div><div class="phone sm"><img src="screens/result.png" alt="업그레이드 전 PRD 버전 답 화면"></div><div class="cap">전</div></div>
+        <div class="arrow">→</div>
+        <div><div class="phone sm"><img src="screens/upgrade/prd-real.png" alt="업그레이드 후 PRD 버전 답 화면"></div><div class="cap">후</div></div>
+      </div>
+      <div class="plus">➕ 최고·최저 기온 <b>바로 뒤</b>에 한 문장</div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <h2>3. 날씨가 이럴 땐?</h2>
+  <p class="sub">시험용 기온 값을 넣어 같은 상황을 두 앱에 똑같이 보여 줬어요.</p>
+  <div class="scene-labels"><span></span><span class="tag s" style="justify-self:start">한 문장</span><span class="tag p" style="justify-self:start">PRD</span></div>
+
+  <div class="scene">
+    <div class="scene-head"><span class="icon">🥵</span><b>더울 때</b><div class="temps">어제 15° / 8°<br>오늘 19° / 9°</div></div>
+    <div class="shot"><div class="phone"><img src="screens/upgrade/sentence-hot.png" alt="한 문장 버전, 더울 때"></div>
+      <div class="verdict"><span class="meh">△ 숫자만</span><span class="q">"어제보다 4도 높습니다."</span></div></div>
+    <div class="shot"><div class="phone"><img src="screens/upgrade/prd-hot.png" alt="PRD 버전, 더울 때"></div>
+      <div class="verdict"><span class="ok">✓ 숫자 + 느낌</span><span class="q">"4도 높아 <b>더 덥고</b>, 최저 기온은 비슷해요."</span></div></div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-head"><span class="icon">🥶</span><b>추울 때</b><div class="temps">어제 18° / 10°<br>오늘 13° / 5°</div></div>
+    <div class="shot"><div class="phone"><img src="screens/upgrade/sentence-cold.png" alt="한 문장 버전, 추울 때"></div>
+      <div class="verdict"><span class="meh">△ 최고 기온만</span><span class="q">"어제보다 5도 낮습니다."</span></div></div>
+    <div class="shot"><div class="phone"><img src="screens/upgrade/prd-cold.png" alt="PRD 버전, 추울 때"></div>
+      <div class="verdict"><span class="ok">✓ 최고 + 최저</span><span class="q">"5도 낮아 <b>더 춥고</b>, 최저도 5도 낮아 <b>더 추워요</b>."</span></div></div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-head"><span class="icon">😐</span><b>1도 차이</b><div class="temps">어제 16° / 9°<br>오늘 17° / 10°</div></div>
+    <div class="shot"><div class="phone"><img src="screens/upgrade/sentence-similar.png" alt="한 문장 버전, 1도 차이"></div>
+      <div class="verdict"><span class="meh">△ 1도도 그대로</span><span class="q">"어제보다 1도 높습니다."</span></div></div>
+    <div class="shot"><div class="phone"><img src="screens/upgrade/prd-similar.png" alt="PRD 버전, 1도 차이"></div>
+      <div class="verdict"><span class="ok">✓ 짧게 정리</span><span class="q">"최고·최저 기온 <b>모두 어제와 비슷해요</b>."</span></div></div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-head"><span class="icon">❓</span><b>어제 정보가 없을 때</b><div class="temps">어제 기온을 못 받음</div></div>
+    <div class="shot"><div class="phone"><img src="screens/upgrade/sentence-missing.png" alt="한 문장 버전, 어제 정보 없음: 날씨 정보를 가져오지 못했어요"></div>
+      <div class="verdict"><span class="no">✗ 오늘 날씨도 못 들음</span><span class="q">"날씨 정보를 가져오지 못했어요."</span></div></div>
+    <div class="shot"><div class="phone"><img src="screens/upgrade/prd-missing.png" alt="PRD 버전, 어제 정보 없음: 비교 문장만 빠지고 오늘 날씨는 그대로"></div>
+      <div class="verdict"><span class="ok">✓ 비교만 빼고 알려 줌</span><span class="q">오늘 날씨는 평소처럼 나와요.</span></div></div>
+  </div>
+
+  <!-- 4 -->
+  <h2>4. 만드는 과정</h2>
+  <p class="sub">같은 기능이어도 일하는 순서가 달랐어요.</p>
+  <div class="flow">
+    <h3><span class="tag s">한 문장</span></h3>
+    <div class="steps s">
+      <div class="step">💬 요청 한 문장</div><span class="to">→</span>
+      <div class="step">💻 코드 수정<small>커밋 1개</small></div>
+    </div>
+  </div>
+  <div class="flow">
+    <h3><span class="tag p">PRD</span></h3>
+    <div class="steps p">
+      <div class="step">📄 PRD에 기능 추가<small>4-6</small></div><span class="to">→</span>
+      <div class="step">🤔 미리 정하기<small>9-5 비교 방식 · 9-6 정보 없을 때</small></div><span class="to">→</span>
+      <div class="step">🎯 완성 기준<small>10-9</small></div><span class="to">→</span>
+      <div class="step">✅ 할 일 6개<small>Todolist 7단계</small></div><span class="to">→</span>
+      <div class="step">💻 하나씩 구현<small>커밋 5개</small></div><span class="to">→</span>
+      <div class="step">🔍 점검</div>
+    </div>
+  </div>
+
+  <div class="bars">
+    <div class="bar-row"><span>커밋</span><div>
+      <div class="bar s" style="width:12.5%">1</div>
+      <div class="bar p" style="width:100%">8개</div></div></div>
+    <div class="bar-row"><span>더한 줄 수</span><div>
+      <div class="bar s" style="width:31%">53</div>
+      <div class="bar p" style="width:100%">169줄 (문서 28줄 포함)</div></div></div>
+    <div class="bar-row"><span>자동 테스트</span><div>
+      <div class="bar s" style="width:23%">8</div>
+      <div class="bar p" style="width:100%">35개 · 모두 통과</div></div></div>
+  </div>
+  <p class="cap" style="text-align:left;margin-top:10px">■ 파랑 = 한 문장 · ■ 노랑 = PRD (테스트 수는 앱 전체 기준)</p>
+
+  <div class="note">
+    <div class="crop"><img src="screens/upgrade/prd-real.png" alt="PRD 버전 답 화면 윗부분: 문장이 길어 끝이 잘려 보임"></div>
+    <div><b>⚠️ 함께 발견한 점</b><br>PRD 답이 길어져서 작은 화면에서는 글자 끝(“우산을 챙기…”)이 잘려 보여요. 소리로는 끝까지 읽어 줘요.</div>
+  </div>
+
+  <p class="end">한 문장 → 빨리 붙인 "숫자 한 줄"<br>PRD → 듣는 사람을 생각한 "느낌까지 담은 말"
+    <small>화면: Chrome · 아이폰 크기(390×844) · 말하기·듣기만 가짜 입력으로 대신</small></p>
+</main>
+</body>
+</html>
