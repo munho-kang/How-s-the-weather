@@ -22,6 +22,8 @@
 
 📊 **발표자료**: https://munho-kang.github.io/How-s-the-weather/presentation/
 
+🆙 **업그레이드 소개 (어제와 비교)**: https://munho-kang.github.io/How-s-the-weather/upgrade/
+
 ---
 
 ## 이런 분을 위해 만들었어요
