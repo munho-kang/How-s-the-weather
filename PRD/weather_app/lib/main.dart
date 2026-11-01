@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'permissions.dart';
 import 'voice.dart';
 import 'weather.dart';
 
@@ -48,6 +49,7 @@ class HomePage extends StatefulWidget {
     this.answer = weatherAnswer,
     this.speak = speakText,
     this.listen = listenOnce,
+    this.prepare = askPermissions,
   });
 
   /// 날씨 답 문장을 만든다. 테스트에서는 가짜로 바꿔 끼운다.
@@ -58,6 +60,9 @@ class HomePage extends StatefulWidget {
 
   /// 한 번 듣고 알아들은 문장을 돌려준다.
   final Future<String?> Function() listen;
+
+  /// 듣기 전에 필요한 허락을 받는다. 마이크를 못 쓰면 false.
+  final Future<bool> Function(Future<void> Function(String) say) prepare;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -73,6 +78,13 @@ class _HomePageState extends State<HomePage> {
     if (_busy) return; // 듣거나 읽는 중에 또 누르면 무시
     _busy = true;
     try {
+      // 처음 쓸 때는 듣기 전에 허락부터 받는다 (추가-2)
+      final micOk = await widget.prepare((t) => _say(t, remember: false));
+      if (!mounted) return;
+      if (!micOk) {
+        await _say(noMic, remember: false);
+        return;
+      }
       // 버튼을 누른 뒤에만 듣기 시작한다 (PRD #4-1, #9-2)
       await _say('말씀하세요.', remember: false);
       if (!mounted) return;
